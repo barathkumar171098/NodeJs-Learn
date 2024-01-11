@@ -12,7 +12,7 @@ Add it to post handler stack */
 router.route('/top-5-cheap').get(tourController.aliasTopTours, tourController.getAllTours);
 
 router.route('/tour-stats').get(tourController.getTourStats)
-router.route('/tour-monthly-plan/:year').get(tourController.getMonthlyPlan)
+router.route('/tour-monthly-plan/:yearData').get(tourController.getMonthlyPlan)
 
 router
 .route('/')

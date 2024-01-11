@@ -3,6 +3,8 @@ const fs = require('fs');
 const Tour = require('../models/tourModel');
 
 const APIFeatures = require('../utils/apifeatures')
+const catchAsync = require('../utils/catchAsync');
+const AppError = require('../utils/appError');
 // const tours = JSON.parse(
 //     fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`)
 // )
@@ -29,8 +31,8 @@ const checkBody = (req, res, next) => {
   next();
 };
 
-const getAllTours = async (req, res, next) => {
-  try {
+const getAllTours = catchAsync(async (req, res, next) => {
+  // try {
     // //Building query
     // //1) Filtering
     // const queryObj = { ...req.query };
@@ -60,13 +62,13 @@ const getAllTours = async (req, res, next) => {
         tour: data,
       },
     });
-  } catch (error) {
-    res.status(400).json({
-      status: 'failed',
-      message: `Invalid data sent: ${error}`,
-    });
-  }
-};
+  // } catch (error) {
+  //   res.status(400).json({
+  //     status: 'failed',
+  //     message: `Invalid data sent: ${error}`,
+  //   });
+  // }
+});
 
 //API With alias
 const aliasTopTours = async (req, res, next ) => {
@@ -104,9 +106,9 @@ const getTourStats = async (req, res, next) => {
       {
         $sort:{ avgPrice: 1}
       },
-      {
-        $match: {_id: {$ne: 'EASY'}}
-      }
+      // {
+      //   $match: {_id: {$ne: 'EASY'}}
+      // }
     ])
 
     res.status(200).json({
@@ -127,11 +129,42 @@ const getTourStats = async (req, res, next) => {
 const getMonthlyPlan = async (req, res) => {
   try {
     const yearData = req.params.yearData * 1;
-    console.log(yearData);
-
     const plan = await Tour.aggregate([
+
+      // This are called as "stages"
       {
-        $unwind: '$startDates'
+        $unwind: '$startDates' /* unwind -- used to deconstruct an array field in a document */               
+      },
+      {
+        $match: {     /* aggregation(match) This aggregation is to filter the documents */
+          startDates:{
+            $gte: new Date(`${yearData}-01-01`), 
+            $lte: new Date(`${yearData}-12-31`)
+          }
+        }
+      },    
+      {
+        $group: {   /* aggreation(group) - stage separates documents into groups according to a "group key" here inside the id have groupKey */
+          _id: { $month: '$startDates'},
+          numTourStarts: {$sum : 1},
+          tours: {$push: '$name'}   // push -- group( accumulator operator)
+        }
+      },
+      {
+        $addFields: { month: '$_id' }
+      },
+      {
+        $project:{            // project --  takes a document that can specify the inclusion of fields
+          id: 0               // if I give 0(false) in the ID means, then only ID field will be present & if I give 1(true) in the ID means, then all field will be present
+        }
+      },
+      {
+        $sort: { 
+          numTourStarts: -1    // sort -- used to specify as (-1) desc or (1) asc 
+        }
+      }, 
+      {
+        $limit: 12  // include the  obj
       }
     ]);
 
@@ -151,28 +184,33 @@ const getMonthlyPlan = async (req, res) => {
 
 //getting tour data by ID
 
-const tourByID = async (req, res) => {
-  try {
-    const tourById = await Tour.findOne({ _id: req.params.id });
+const tourByID = catchAsync(async (req, res, next) => {
+  // try {
+    const tour = await Tour.findById(req.params.id);
+    console.log();
     // const id = req.params.id * 1;
     // const tourData = tours.find(el => el.id === id)
     // console.log(tourData, 'TourData');
+
+    if(!tour){
+      return next(new AppError(`No tour found in that ID`, 404))
+    }
     return res.status(200).json({
       status: 'Success',
       data: {
-        tour: tourById,
+        tour: tour,
       },
     });
-  } catch (error) {
-    res.status(400).json({
-      status: 'failed',
-      message: `Invalid data sent: ${error}`,
-    });
-  }
-};
+  // } catch (error) {
+  //   res.status(400).json({
+  //     status: 'failed',
+  //     message: `Invalid data sent: ${error}`,
+  //   });
+  // }
+});
 
 //creating tour
-const createTour = async (req, res) => {
+const createTour = catchAsync(async (req, res, next) => {
   // // console.log(req.body, "request body Data");
   // // res.send("Done")
 
@@ -188,7 +226,7 @@ const createTour = async (req, res) => {
   //         status:"Success"
   //     })
   // })
-  try {
+  // try {
     const TourData = await Tour.create(req.body);
     console.log(TourData, 'TourData');
     res.status(201).json({
@@ -197,51 +235,61 @@ const createTour = async (req, res) => {
         tour: TourData,
       },
     });
-  } catch (error) {
-    res.status(400).json({
-      status: 'failed',
-      message: `Invalid data sent: ${error}`,
-    });
-  }
-};
+  // } catch (error) {
+  //   res.status(400).json({
+  //     status: 'failed',
+  //     message: `Invalid data sent: ${error}`,
+  //   });
+  // }
+})
 
 //update tour
 
-const updateTour = async (req, res) => {
-  try {
+const updateTour = catchAsync(async (req, res, next) => {
+  // try {
     const tourData = await Tour.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
     });
+
+    if(!tourData) {
+      return next(new AppError(`No tour found in that ID`, 404))
+    }
+
     return res.status(200).json({
       status: 'Success',
       data: {
         tourData,
       },
     });
-  } catch (error) {
-    res.status(400).json({
-      status: 'failed',
-      message: `Invalid data sent: ${error}`,
-    });
-  }
-};
-const deleteTour = async (req, res) => {
-  try {
+  // } catch (error) {
+  //   res.status(400).json({
+  //     status: 'failed',
+  //     message: `Invalid data sent: ${error}`,
+  //   });
+  // }
+});
+
+const deleteTour = catchAsync(async (req, res, next) => {
+  // try {
     const tourData = await Tour.findByIdAndDelete(req.params.id);
+    console.log(tourData,"tourData");
+    if(!tourData) {
+      return next(new AppError(`No tour found in that ID`, 404))
+    }
     return res.status(200).json({
       status: 'Success',
       data: {
         tours: tourData,
       },
     });
-  } catch (err) {
-    res.status(400).json({
-      status: 'failed',
-      message: `Invalid data sent: ${err}`,
-    });
-  }
-};
+  // } catch (err) {
+  //   res.status(400).json({
+  //     status: 'failed',
+  //     message: `Invalid data sent: ${err}`,
+  //   });
+  // }
+});
 
 module.exports = {
   getAllTours,
