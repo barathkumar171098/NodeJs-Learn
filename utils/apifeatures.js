@@ -9,7 +9,7 @@ class APIFeatures {
     const queryObj = { ...this.queryString };
     const excludedFields = ['page', 'sort', 'limit', 'fields'];
     excludedFields.forEach((el) => delete queryObj[el]);
-    console.log(excludedFields, 'excludedFields');
+    // console.log(excludedFields, 'excludedFields');
 
     //2)Advanced filtering
     let queryStr = JSON.stringify(queryObj);
@@ -48,7 +48,7 @@ class APIFeatures {
     const page = this.queryString.page * 1 || 1;
     const limit = this.queryString.limit * 1 || 100;
     const skip = (page - 1) * limit;
-    console.log(skip, 'skip pages');
+    // console.log(skip, 'skip pages');
     this.query = this.query.skip(skip).limit(limit);
     return this;
   }

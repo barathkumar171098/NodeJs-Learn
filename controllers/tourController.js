@@ -228,7 +228,7 @@ const createTour = catchAsync(async (req, res, next) => {
   // })
   // try {
     const TourData = await Tour.create(req.body);
-    console.log(TourData, 'TourData');
+    // console.log(TourData, 'TourData');
     res.status(201).json({
       status: 'Success',
       data: {
