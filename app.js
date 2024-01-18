@@ -8,7 +8,7 @@ const globalErrorHandler = require('./controllers/errorController')
 const AppError = require('./utils/appError');
 
 //MIDDLEWARE
-console.log(process.env.NODE_ENV, 'envvvv');
+// console.log(process.env.NODE_ENV, 'envvvv');
 
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev')); /* third party middleware */
@@ -25,6 +25,7 @@ app.use(express.static(`${__dirname}/public`));
 //Own MiddleWare
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
+  // console.log(req.headers);
   next();
 });
 
