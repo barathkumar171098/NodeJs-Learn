@@ -8,7 +8,7 @@ It's abstracting logic away from the actual send Fn
 using pug template to Send a Welcome Email*/
 
 module.exports = class Email {
-  constructor(user, url) {
+  constructor(user, url) { 
     this.to = user.email;
     this.firstName = user.name.split(" ")[0];
     this.url = url;
