@@ -8,7 +8,6 @@ const userRouter = require('./routes/userRotes');
 const  reviewRouter = require('./routes/reviewRoutes')
 const  bookingRouter = require('./routes/bookingRoutes')
 const viewRouter = require('./routes/viewRoutes');
-
 const rateLimit = require('express-rate-limit');
 const  helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
