@@ -16,12 +16,11 @@ const userSchema = new moongoose.Schema({
     lowercase: true,
     validate: [validator.isEmail, "Please provide a valid email"],
   },
-  photo: String,
+  photo: { type: String, default: "default.jpg" },
   role: {
     type: String,
-    enum: ['user', 'guide', 'lead-guide', 'admin'],
-    default: 'user'
-
+    enum: ["user", "guide", "lead-guide", "admin"],
+    default: "user",
   },
   password: {
     type: String,
@@ -39,7 +38,6 @@ const userSchema = new moongoose.Schema({
       },
       message: "Passwords are not the same",
     },
- 
   },
   passwordChangedAt: Date,
   passwordResetToken: String,
@@ -47,8 +45,8 @@ const userSchema = new moongoose.Schema({
   active: {
     type: Boolean,
     default: true,
-    select: false
-  }
+    select: false,
+  },
 });
 
 userSchema.pre('save', async function (next) {
